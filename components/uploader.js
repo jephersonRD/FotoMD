@@ -71,9 +71,13 @@ const Uploader = {
     }
     const loadPromises = files.map((f) => this.loadImage(f));
     Promise.all(loadPromises).then((results) => {
-      this.images = [...this.images, ...results.filter(Boolean)];
+      const loaded = results.filter(Boolean);
+      this.images = [...this.images, ...loaded];
       document.getElementById('upload-btn').disabled = false;
-      Toast.show(`${results.filter(Boolean).length} imagen(es) cargada(s)`, 'success');
+      Gallery.render();
+      App.showSection('gallery');
+      Toast.show(`${loaded.length} imagen(es) cargada(s)`, 'success');
+      setTimeout(() => App.showSection('tools'), 800);
     });
   },
 

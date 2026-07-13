@@ -2,10 +2,18 @@ const App = {
   currentSection: 'upload',
 
   init() {
+    this.initTheme();
     this.registerSW();
     this.bindGlobalEvents();
     this.loadUI();
     setTimeout(() => this.hideLoading(), 2000);
+  },
+
+  initTheme() {
+    const saved = localStorage.getItem('photomd_theme');
+    if (saved === 'light') {
+      document.documentElement.classList.add('light-mode');
+    }
   },
 
   async registerSW() {
@@ -37,8 +45,7 @@ const App = {
     Gallery.render();
 
     document.getElementById('upload-btn').addEventListener('click', () => {
-      Gallery.render();
-      this.showSection('gallery');
+      document.getElementById('file-input').click();
     });
 
     document.getElementById('add-more-btn').addEventListener('click', () => {
@@ -75,7 +82,16 @@ const App = {
     });
 
     document.getElementById('theme-btn').addEventListener('click', () => {
-      Toast.show('Modo oscuro siempre activo', 'info');
+      document.documentElement.classList.toggle('light-mode');
+      const isLight = document.documentElement.classList.contains('light-mode');
+      localStorage.setItem('photomd_theme', isLight ? 'light' : 'dark');
+      const svg = document.querySelector('#theme-btn svg');
+      if (isLight) {
+        svg.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+      } else {
+        svg.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+      }
+      Toast.show(isLight ? 'Modo claro activado' : 'Modo oscuro activado', 'success');
     });
 
     document.querySelectorAll('.tool-card').forEach((card) => {

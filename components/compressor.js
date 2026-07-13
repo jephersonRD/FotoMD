@@ -1,6 +1,7 @@
 const Compressor = {
   targetSize: 500 * 1024,
   format: 'image/jpeg',
+  ext: 'jpg',
 
   open() {
     App.showToolWorkspace('Compresor inteligente');
@@ -59,6 +60,7 @@ const Compressor = {
 
     document.getElementById('compress-format').addEventListener('change', (e) => {
       this.format = e.target.value;
+      this.ext = this.format.split('/')[1];
     });
 
     document.getElementById('compress-btn').addEventListener('click', () => this.compress());
@@ -76,7 +78,7 @@ const Compressor = {
     for (const img of Uploader.images) {
       status.textContent = `Comprimiendo ${img.name} (${done + 1}/${total})`;
       const fill = progress.querySelector('.progress-fill');
-      fill.style.width = `${((done) / total) * 100}%`;
+      fill.style.width = `${(done / total) * 100}%`;
 
       try {
         const canvas = document.createElement('canvas');
@@ -85,7 +87,7 @@ const Compressor = {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img.img, 0, 0);
 
-        const blob = await new Promise((resolve) => canvas.toBlob(resolve, this.format, 0.85));
+        let blob = await this.compressToTarget(canvas, img.size);
         const resultSize = blob.size;
         const saved = ((1 - resultSize / img.size) * 100).toFixed(1);
 
@@ -110,10 +112,58 @@ const Compressor = {
     status.textContent = 'Compresión completada';
     Toast.show(`${done} imagen(es) comprimida(s)`, 'success');
 
-    const exportBtn = document.createElement('button');
-    exportBtn.className = 'btn-primary';
-    exportBtn.innerHTML = 'Exportar imágenes comprimidas';
-    exportBtn.onclick = () => Exporter.open();
-    resultsDiv.appendChild(exportBtn);
+    if (!document.querySelector('#compress-results .btn-primary')) {
+      const exportBtn = document.createElement('button');
+      exportBtn.className = 'btn-primary';
+      exportBtn.style.marginTop = '1rem';
+      exportBtn.innerHTML = 'Exportar imágenes comprimidas';
+      exportBtn.onclick = () => Exporter.open();
+      resultsDiv.appendChild(exportBtn);
+    }
+  },
+
+  compressToTarget(canvas, originalSize) {
+    return new Promise((resolve) => {
+      const isLossless = this.format === 'image/png';
+      if (isLossless) {
+        canvas.toBlob((blob) => resolve(blob), this.format);
+        return;
+      }
+
+      let low = 0.05;
+      let high = 0.95;
+      let bestBlob = null;
+      let bestSize = Infinity;
+      let attempts = 0;
+      const maxAttempts = 12;
+
+      const tryQuality = (q) => {
+        canvas.toBlob((blob) => {
+          attempts++;
+          if (!blob) { resolve(bestBlob || canvas.toBlob(() => {}, 'image/jpeg', 0.8)); return; }
+
+          const size = blob.size;
+          if (Math.abs(size - this.targetSize) < Math.abs(bestSize - this.targetSize)) {
+            bestBlob = blob;
+            bestSize = size;
+          }
+
+          if (size <= this.targetSize || attempts >= maxAttempts) {
+            if (size > originalSize && originalSize <= this.targetSize) {
+              canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.95);
+            } else {
+              resolve(bestBlob);
+            }
+            return;
+          }
+
+          low = q;
+          const mid = (low + high) / 2;
+          tryQuality(mid);
+        }, this.format, q);
+      };
+
+      tryQuality(high);
+    });
   }
 };
