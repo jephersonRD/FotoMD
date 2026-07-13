@@ -29,6 +29,11 @@ const Compressor = {
             <option value="image/webp">WebP</option>
           </select>
         </div>
+        <div class="option-group">
+          <label style="color:var(--text-tertiary);font-size:0.8rem">
+            * Si PNG resulta más pesado, se convertirá automáticamente a otro formato
+          </label>
+        </div>
         <div class="action-row">
           <button id="compress-btn" class="btn-primary">Comprimir imágenes</button>
         </div>
@@ -81,28 +86,36 @@ const Compressor = {
       fill.style.width = `${(done / total) * 100}%`;
 
       try {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img.img, 0, 0);
-
-        let blob = await this.compressToTarget(canvas, img.size);
-        const resultSize = blob.size;
+        const result = await this.compressOne(img);
+        const resultSize = result.blob.size;
         const saved = ((1 - resultSize / img.size) * 100).toFixed(1);
+        const dimensionInfo = result.width ? ` (${result.width}×${result.height})` : '';
+        const formatLabel = result.actualFormat ? result.actualFormat.split('/')[1].toUpperCase() : this.ext.toUpperCase();
 
         const resultDiv = document.createElement('div');
         resultDiv.className = 'comparison';
         resultDiv.innerHTML = `
-          <div class="comparison-box"><div class="label">Original</div><div class="value">${Gallery.formatSize(img.size)}</div></div>
-          <div class="comparison-box"><div class="label">Comprimido</div><div class="value">${Gallery.formatSize(resultSize)}</div></div>
-          <div class="comparison-box" style="grid-column:1/3"><div class="label">Ahorro</div><div class="value">${saved}%</div></div>
+          <div class="comparison-box">
+            <div class="label">Original</div>
+            <div class="value">${Gallery.formatSize(img.size)}</div>
+            <div style="color:var(--text-tertiary);font-size:0.7rem">${img.width}×${img.height}</div>
+          </div>
+          <div class="comparison-box">
+            <div class="label">Comprimido (${formatLabel})</div>
+            <div class="value">${Gallery.formatSize(resultSize)}</div>
+            <div style="color:var(--text-tertiary);font-size:0.7rem">${dimensionInfo.replace(' (','')}</div>
+          </div>
+          <div class="comparison-box" style="grid-column:1/3">
+            <div class="label">Ahorro</div>
+            <div class="value" style="color:${parseFloat(saved) >= 0 ? '#22c55e' : '#ef4444'}">${saved}%</div>
+          </div>
         `;
         resultsDiv.appendChild(resultDiv);
 
-        img.compressedBlob = blob;
+        img.compressedBlob = result.blob;
+        if (result.width) { img.width = result.width; img.height = result.height; }
       } catch (err) {
-        Toast.show(`Error al comprimir ${img.name}`, 'error');
+        Toast.show(`Error al comprimir ${img.name}: ${err.message}`, 'error');
       }
 
       done++;
@@ -122,48 +135,121 @@ const Compressor = {
     }
   },
 
-  compressToTarget(canvas, originalSize) {
-    return new Promise((resolve) => {
-      const isLossless = this.format === 'image/png';
+  async compressOne(img) {
+    const originalSize = img.size;
+    const target = this.targetSize;
+    let format = this.format;
+
+    if (originalSize <= target * 0.95) {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img.img, 0, 0);
+      const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.92));
+      if (blob.size <= originalSize) {
+        return { blob, width: img.width, height: img.height, actualFormat: 'image/jpeg' };
+      }
+      return { blob: await this.fileToBlob(img.file), width: img.width, height: img.height, actualFormat: format };
+    }
+
+    let bestBlob = null;
+    let bestSize = Infinity;
+    let bestWidth = img.width;
+    let bestHeight = img.height;
+    let actualFormat = format;
+
+    const supportsWebP = () => {
+      return new Promise((r) => {
+        const c = new Image();
+        c.onload = () => r(c.width === 1);
+        c.onerror = () => r(false);
+        c.src = 'data:image/webp;base64,UklGRiQAAABXRUJQVlA4IBgAAAAwAQCdASoBAAEAAwA0JaQAA3AA/vuUAAA=';
+      });
+    };
+
+    const candidates = [format];
+    if (format === 'image/png') {
+      const webpOk = await supportsWebP();
+      if (webpOk) candidates.push('image/webp');
+      candidates.push('image/jpeg');
+    }
+
+    for (const fmt of candidates) {
+      const isLossless = fmt === 'image/png';
       if (isLossless) {
-        canvas.toBlob((blob) => resolve(blob), this.format);
-        return;
+        const c = document.createElement('canvas');
+        c.width = img.width;
+        c.height = img.height;
+        c.getContext('2d').drawImage(img.img, 0, 0);
+        const blob = await new Promise((r) => c.toBlob(r, 'image/png'));
+        if (blob.size < bestSize) {
+          bestBlob = blob;
+          bestSize = blob.size;
+          bestWidth = img.width;
+          bestHeight = img.height;
+          actualFormat = 'image/png';
+        }
+        continue;
       }
 
-      let low = 0.05;
-      let high = 0.95;
-      let bestBlob = null;
-      let bestSize = Infinity;
-      let attempts = 0;
-      const maxAttempts = 12;
+      let scale = 1;
+      while (scale >= 0.3) {
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        if (w < 50 || h < 50) break;
 
-      const tryQuality = (q) => {
-        canvas.toBlob((blob) => {
-          attempts++;
-          if (!blob) { resolve(bestBlob || canvas.toBlob(() => {}, 'image/jpeg', 0.8)); return; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img.img, 0, 0, w, h);
 
-          const size = blob.size;
-          if (Math.abs(size - this.targetSize) < Math.abs(bestSize - this.targetSize)) {
+        for (let q = 80; q >= 5; q -= 5) {
+          const quality = q / 100;
+          const blob = await new Promise((r) => canvas.toBlob(r, fmt, quality));
+          if (!blob) continue;
+          if (blob.size < bestSize) {
             bestBlob = blob;
-            bestSize = size;
+            bestSize = blob.size;
+            bestWidth = w;
+            bestHeight = h;
+            actualFormat = fmt;
           }
-
-          if (size <= this.targetSize || attempts >= maxAttempts) {
-            if (size > originalSize && originalSize <= this.targetSize) {
-              canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.95);
-            } else {
-              resolve(bestBlob);
-            }
-            return;
+          if (blob.size <= target) {
+            return { blob, width: w, height: h, actualFormat: fmt };
           }
+        }
+        scale -= 0.1;
+      }
+    }
 
-          low = q;
-          const mid = (low + high) / 2;
-          tryQuality(mid);
-        }, this.format, q);
+    if (bestBlob && bestSize < originalSize) {
+      return { blob: bestBlob, width: bestWidth, height: bestHeight, actualFormat };
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img.img, 0, 0);
+    const fallbackBlob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.5));
+    if (fallbackBlob && fallbackBlob.size < originalSize) {
+      return { blob: fallbackBlob, width: img.width, height: img.height, actualFormat: 'image/jpeg' };
+    }
+
+    return { blob: await this.fileToBlob(img.file), width: img.width, height: img.height, actualFormat: format };
+  },
+
+  fileToBlob(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const blob = new Blob([reader.result], { type: file.type });
+        resolve(blob);
       };
-
-      tryQuality(high);
+      reader.readAsArrayBuffer(file);
     });
   }
 };
