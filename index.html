@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0D0D0D">
+  <meta name="description" content="PhotoMD Plus - Editor profesional de imágenes. Comprime, recorta, mejora y edita tus fotos desde cualquier dispositivo.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PhotoMD Plus">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <title>PhotoMD Plus — Editor profesional de imágenes</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <div id="loading-screen">
+      <div class="loading-logo">
+        <svg viewBox="0 0 48 48" fill="none" class="loading-icon">
+          <rect x="4" y="8" width="40" height="32" rx="4" stroke="#FFD700" stroke-width="2.5" fill="none"/>
+          <circle cx="16" cy="20" r="4" stroke="#FFD700" stroke-width="2" fill="none"/>
+          <path d="M4 28l10-8 8 6 10-12 12 14" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <h1>PhotoMD Plus</h1>
+        <p>Cargando...</p>
+      </div>
+      <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+    </div>
+
+    <header id="header" class="header hidden">
+      <button id="menu-btn" class="icon-btn" aria-label="Menú">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="header-logo">
+        <svg viewBox="0 0 24 24" fill="none" class="header-icon">
+          <rect x="2" y="4" width="20" height="16" rx="2" stroke="#FFD700" stroke-width="2" fill="none"/>
+          <circle cx="8" cy="10" r="2" stroke="#FFD700" stroke-width="1.5" fill="none"/>
+          <path d="M2 14l5-4 4 3 5-6 6 7" stroke="#FFD700" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <span>PhotoMD Plus</span>
+      </div>
+      <button id="theme-btn" class="icon-btn" aria-label="Cambiar tema">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      </button>
+    </header>
+
+    <main id="main-content">
+      <section id="upload-section" class="section">
+        <div class="upload-container">
+          <div class="upload-logo">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="6" y="12" width="52" height="40" rx="6" stroke="#FFD700" stroke-width="3" fill="none"/>
+              <circle cx="22" cy="28" r="5" stroke="#FFD700" stroke-width="2.5" fill="none"/>
+              <path d="M6 36l14-10 10 8 14-16 14 18" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+          </div>
+          <h2 class="upload-title">PhotoMD Plus</h2>
+          <p class="upload-subtitle">Editor profesional de imágenes</p>
+          <div class="count-selector">
+            <label for="image-count">¿Cuántas imágenes vas a editar?</label>
+            <div class="count-control">
+              <button id="count-minus" class="count-btn" aria-label="Reducir">−</button>
+              <input type="number" id="image-count" value="1" min="1" max="50">
+              <button id="count-plus" class="count-btn" aria-label="Aumentar">+</button>
+            </div>
+          </div>
+          <div id="drop-zone" class="drop-zone">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="1.5" stroke-linecap="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p>Arrastra y suelta tus imágenes aquí</p>
+            <span class="drop-hint">o haz clic para seleccionar archivos</span>
+          </div>
+          <input type="file" id="file-input" accept="image/*" multiple hidden>
+          <button id="upload-btn" class="btn-primary" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Subir imágenes
+          </button>
+        </div>
+      </section>
+
+      <section id="gallery-section" class="section hidden">
+        <div class="gallery-header">
+          <h2>Imágenes cargadas <span id="gallery-count" class="badge">0</span></h2>
+          <button id="add-more-btn" class="btn-secondary">+ Añadir más</button>
+        </div>
+        <div id="gallery-grid" class="gallery-grid"></div>
+        <div class="gallery-actions">
+          <button id="process-btn" class="btn-primary" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            ¿Qué quieres hacer con estas imágenes?
+          </button>
+        </div>
+      </section>
+
+      <section id="tools-section" class="section hidden">
+        <div class="tools-header">
+          <button id="back-to-gallery" class="icon-btn" aria-label="Volver">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          </button>
+          <h2>Herramientas</h2>
+        </div>
+        <div class="tools-grid">
+          <button class="tool-card" data-tool="compressor">
+            <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 15V5a1 1 0 011-1h14a1 1 0 011 1v10"/><path d="M4 15v2a1 1 0 001 1h14a1 1 0 001-1v-2"/><line x1="12" y1="11" x2="12" y2="19"/><polyline points="9 16 12 19 15 16"/></svg></div>
+            <span class="tool-name">Compresor</span>
+            <span class="tool-desc">Reduce el peso de tus imágenes</span>
+          </button>
+          <button class="tool-card" data-tool="background">
+            <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <span class="tool-name">Eliminar fondo</span>
+            <span class="tool-desc">Quita el fondo con IA</span>
+          </button>
+          <button class="tool-card" data-tool="enhancer">
+            <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></div>
+            <span class="tool-name">Mejorar calidad</span>
+            <span class="tool-desc">Nitidez, color y resolución</span>
+          </button>
+          <button class="tool-card" data-tool="crop">
+            <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2v16h16"/><path d="M2 6h16v16"/></svg></div>
+            <span class="tool-name">Recortar</span>
+            <span class="tool-desc">Recorta y endereza</span>
+          </button>
+          <button class="tool-card" data-tool="resize">
+            <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M21 9H3M21 15H3"/></svg></div>
+            <span class="tool-name">Redimensionar</span>
+            <span class="tool-desc">Cambia el tamaño</span>
+          </button>
+          <button class="tool-card" data-tool="editor">
+            <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+            <span class="tool-name">Editor básico</span>
+            <span class="tool-desc">Brillo, contraste, filtros</span>
+          </button>
+          <button class="tool-card" data-tool="export">
+            <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+            <span class="tool-name">Exportar</span>
+            <span class="tool-desc">Descarga individual o ZIP</span>
+          </button>
+          <button class="tool-card" data-tool="batch">
+            <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="8" height="8" rx="1"/></svg></div>
+            <span class="tool-name">Procesamiento múltiple</span>
+            <span class="tool-desc">Edita todas a la vez</span>
+          </button>
+        </div>
+      </section>
+
+      <section id="tool-workspace" class="section hidden">
+        <div class="workspace-header">
+          <button id="close-tool" class="icon-btn" aria-label="Cerrar herramienta">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <h3 id="tool-title">Herramienta</h3>
+        </div>
+        <div id="tool-content" class="tool-content"></div>
+      </section>
+    </main>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
+    <aside id="sidebar" class="sidebar hidden">
+      <div class="sidebar-header">
+        <svg viewBox="0 0 24 24" fill="none" class="sidebar-icon">
+          <rect x="2" y="4" width="20" height="16" rx="2" stroke="#FFD700" stroke-width="2" fill="none"/>
+          <circle cx="8" cy="10" r="2" stroke="#FFD700" stroke-width="1.5" fill="none"/>
+          <path d="M2 14l5-4 4 3 5-6 6 7" stroke="#FFD700" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <span>PhotoMD Plus</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="sidebar-link active" data-section="upload">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Subir imágenes
+        </a>
+        <a href="#" class="sidebar-link" data-section="gallery">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          Galería
+        </a>
+        <a href="#" class="sidebar-link" data-section="tools">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+          Herramientas
+        </a>
+        <a href="#" class="sidebar-link" data-section="history">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Historial
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="sidebar-version">v1.0.0</span>
+      </div>
+    </aside>
+  </div>
+
+  <script src="components/uploader.js"></script>
+  <script src="components/gallery.js"></script>
+  <script src="components/compressor.js"></script>
+  <script src="components/background-remover.js"></script>
+  <script src="components/enhancer.js"></script>
+  <script src="components/cropper.js"></script>
+  <script src="components/resizer.js"></script>
+  <script src="components/editor.js"></script>
+  <script src="components/exporter.js"></script>
+  <script src="components/batch-processor.js"></script>
+  <script src="components/history.js"></script>
+  <script src="components/tutorial.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

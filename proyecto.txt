@@ -1,0 +1,580 @@
+Proyecto: Plus Editor / Photo Plus
+
+Desarrolla una aplicación web moderna llamada “Plus Editor” (nombre alternativo: “Photo Plus”) enfocada en la edición y optimización de imágenes desde dispositivos móviles Android y ordenadores.
+
+Objetivo principal
+
+Crear una plataforma web rápida, profesional y completamente responsiva que permita a los usuarios subir varias imágenes al mismo tiempo y aplicar herramientas de edición avanzadas de manera sencilla.
+
+La aplicación debe estar desarrollada únicamente con:
+
+- HTML5.
+- CSS3.
+- JavaScript moderno (ES6+).
+- Debe funcionar como una PWA (Progressive Web App) instalable en Android.
+- Código limpio, modular y bien comentado.
+- Diseño optimizado para pantallas móviles y escritorio.
+
+---
+
+Diseño e interfaz
+
+Paleta de colores
+
+Usar exclusivamente:
+
+- Negro profundo (#0D0D0D).
+- Blanco (#FFFFFF).
+- Amarillo dorado (#FFD700).
+
+Estilo visual
+
+- Interfaz premium y moderna.
+- Diseño minimalista y elegante.
+- Animaciones suaves.
+- Tarjetas con bordes redondeados.
+- Sombras ligeras.
+- Iconos profesionales.
+- Transiciones fluidas.
+- Compatible con modo oscuro.
+- Apariencia similar a aplicaciones móviles profesionales.
+
+Compatibilidad
+
+Optimizar para:
+
+- Android.
+- Tablets.
+- Ordenadores.
+- Navegadores modernos.
+- Pantallas pequeñas y grandes.
+
+---
+
+Pantalla principal
+
+Al abrir la aplicación, mostrar:
+
+- Logo de Plus Editor.
+- Botón principal: «Subir imágenes».
+- Contador para elegir cuántas imágenes se subirán.
+- Zona de arrastrar y soltar archivos.
+- Vista previa en cuadrícula.
+- Indicador del tamaño de cada imagen.
+- Barra de progreso durante el procesamiento.
+
+---
+
+Flujo de usuario
+
+Paso 1
+
+El usuario indica cuántas imágenes desea subir.
+
+Ejemplos:
+
+- 1 imagen.
+- 10 imágenes.
+- 20 imágenes.
+- Sin límite estricto.
+
+Paso 2
+
+El usuario selecciona las imágenes desde:
+
+- Galería.
+- Archivos.
+- Cámara del teléfono.
+
+Paso 3
+
+Una vez cargadas las imágenes, abrir automáticamente un menú con la pregunta:
+
+«¿Qué quieres hacer con estas imágenes?»
+
+---
+
+Herramientas incluidas
+
+1. Compresor inteligente de imágenes
+
+Permitir:
+
+- Reducir imágenes de varios megabytes.
+
+- Elegir tamaño objetivo:
+  
+    - 500 KB.
+      - 1 MB.
+        - 200 KB.
+          - Tamaño personalizado.
+
+          - Mantener la mejor calidad posible.
+
+          - Mostrar comparación:
+            
+              - Tamaño original.
+                - Tamaño final.
+                  - Porcentaje ahorrado.
+
+                  Implementar:
+
+                  - Compresión JPEG.
+                  - Compresión PNG.
+                  - Conversión automática a WebP.
+                  - Procesamiento por lotes.
+
+                  ---
+
+                  2. Eliminador de fondo
+
+                  Funciones:
+
+                  - Eliminar el fondo automáticamente mediante IA.
+
+                  - Mostrar vista previa antes y después.
+
+                  - Permitir:
+                    
+                      - Fondo transparente.
+                        - Fondo blanco.
+                          - Fondo negro.
+                            - Fondo personalizado.
+                              - Color sólido.
+
+                              ---
+
+                              3. Mejorador de calidad
+
+                              Funciones:
+
+                              - Aumentar nitidez.
+                              - Mejorar colores.
+                              - Reducir ruido.
+                              - Aumentar resolución.
+                              - Restaurar imágenes borrosas.
+
+                              Opciones:
+
+                              - Mejorar x2.
+                              - Mejorar x4.
+                              - Mejorar automáticamente.
+
+                              ---
+
+                              4. Recorte avanzado
+
+                              Permitir:
+
+                              - Recorte libre.
+                              - Formato cuadrado.
+                              - 16:9.
+                              - 4:3.
+                              - 1:1.
+                              - Formato para TikTok.
+                              - Formato para YouTube.
+                              - Formato para Instagram.
+
+                              Añadir:
+
+                              - Rotación.
+                              - Volteo horizontal.
+                              - Volteo vertical.
+
+                              ---
+
+                              5. Redimensionador
+
+                              Permitir cambiar:
+
+                              - Anchura.
+
+                              - Altura.
+
+                              - Resoluciones predefinidas:
+                                
+                                  - 720p.
+                                    - 1080p.
+                                      - 1440p.
+                                        - 4K.
+
+                                        ---
+
+                                        6. Editor básico
+
+                                        Agregar:
+
+                                        - Brillo.
+                                        - Contraste.
+                                        - Saturación.
+                                        - Temperatura.
+                                        - Exposición.
+                                        - Sombras.
+                                        - Viñeta.
+                                        - Filtros profesionales.
+
+                                        ---
+
+                                        7. Procesamiento múltiple
+
+                                        La aplicación debe permitir:
+
+                                        - Editar muchas imágenes al mismo tiempo.
+                                        - Aplicar la misma configuración a todas.
+                                        - Procesamiento en segundo plano.
+                                        - Mostrar progreso individual.
+
+                                        ---
+
+                                        8. Exportación
+
+                                        Permitir descargar:
+
+                                        - JPG.
+                                        - PNG.
+                                        - WebP.
+
+                                        Opciones:
+
+                                        - Descargar individualmente.
+                                        - Descargar todas en un archivo ZIP.
+
+                                        ---
+
+                                        Arquitectura técnica
+
+                                        Organizar el proyecto en:
+
+                                        - index.html
+                                        - style.css
+                                        - app.js
+                                        - components/
+                                        - assets/
+                                        - icons/
+                                        - workers/
+
+                                        Usar:
+
+                                        - Web Workers para evitar bloqueos.
+                                        - Canvas API.
+                                        - File API.
+                                        - Drag & Drop API.
+                                        - Service Worker.
+                                        - Local Storage.
+
+                                        ---
+
+                                        Librerías recomendadas
+
+                                        Integrar:
+
+                                        - Cropper.js.
+                                        - Compressor.js.
+                                        - JSZip.
+                                        - Fabric.js.
+
+                                        Para IA:
+
+                                        - TensorFlow.js.
+                                        - ONNX Runtime Web.
+
+                                        ---
+
+                                        Rendimiento
+
+                                        La aplicación debe:
+
+                                        - Cargar rápido.
+                                        - Consumir poca memoria.
+                                        - Funcionar correctamente en teléfonos Android modestos.
+                                        - Optimizar imágenes grandes.
+                                        - Mantener una interfaz fluida.
+
+                                        ---
+
+                                        Extras
+
+                                        Agregar:
+
+                                        - Pantalla de carga elegante.
+                                        - Notificaciones modernas.
+                                        - Historial de ediciones.
+                                        - Sistema de deshacer y rehacer.
+                                        - Tutorial inicial.
+                                        - Diseño premium.
+
+                                        ---
+
+                                        Resultado esperado
+
+                                        Generar una aplicación web completa, moderna y lista para producción, con código limpio y profesional, enfocada principalmente en Android pero totalmente compatible con ordenadores.
+
+
+
+
+
+
+
+                                        Actualización del proyecto
+
+                                        El nombre oficial del proyecto será PhotoMD Plus.
+
+                                        Además de generar toda la aplicación web, debes crear un repositorio de GitHub completamente profesional y listo para publicarse.
+
+                                        Requisitos del repositorio
+
+                                        Genera un archivo "README.md" moderno, atractivo y bien estructurado para GitHub, con una apariencia profesional y tecnológica.
+
+                                        El diseño del README debe incluir:
+
+                                        - Banner principal animado.
+                                        - GIF de demostración de la aplicación.
+                                        - Capturas de pantalla.
+                                        - Vista previa para móviles y ordenadores.
+                                        - Insignias profesionales.
+                                        - Estadísticas del repositorio.
+                                        - Sección de estrellas y favoritos.
+                                        - Información del proyecto.
+                                        - Tabla de características.
+                                        - Sección de instalación.
+                                        - Guía de uso.
+                                        - Créditos.
+                                        - Licencia.
+                                        - Hoja de ruta del proyecto.
+
+                                        No utilices emojis grandes ni decoración infantil. El diseño debe verse limpio, elegante y profesional.
+
+                                        ---
+
+                                        Diseño del README
+
+                                        La IA debe generar un README con una estructura similar a esta:
+
+                                        - Banner superior con el nombre PhotoMD Plus.
+
+                                        - Descripción corta del proyecto.
+
+                                        - GIF mostrando el funcionamiento de la aplicación.
+
+                                        - Insignias automáticas:
+                                          
+                                            - Android.
+                                              - Web App.
+                                                - HTML5.
+                                                  - CSS3.
+                                                    - JavaScript.
+                                                      - PWA.
+                                                        - GitHub Stars.
+                                                          - Forks.
+                                                            - License.
+                                                              - Issues.
+
+                                                              - Estadísticas de GitHub:
+                                                                
+                                                                  - Número de estrellas.
+                                                                    - Número de forks.
+                                                                      - Descargas.
+                                                                        - Contribuyentes.
+                                                                          - Últimos commits.
+
+                                                                          - Tabla comparativa de funciones.
+
+                                                                          - Galería de imágenes.
+
+                                                                          - Sección "Características".
+
+                                                                          - Sección "Tecnologías utilizadas".
+
+                                                                          - Sección "Instalación".
+
+                                                                          - Sección "Compilación".
+
+                                                                          - Sección "Uso".
+
+                                                                          - Sección "Próximamente".
+
+                                                                          - Sección "Contribuciones".
+
+                                                                          - Sección "Licencia".
+
+                                                                          ---
+
+                                                                          Tecnologías del proyecto
+
+                                                                          La IA debe generar todo el código utilizando:
+
+                                                                          - HTML5.
+                                                                          - CSS3.
+                                                                          - JavaScript moderno (ES6+).
+                                                                          - Service Workers.
+                                                                          - Web Workers.
+                                                                          - Canvas API.
+                                                                          - File API.
+                                                                          - Local Storage.
+
+                                                                          Librerías recomendadas:
+
+                                                                          - Cropper.js.
+                                                                          - Compressor.js.
+                                                                          - Fabric.js.
+                                                                          - JSZip.
+                                                                          - TensorFlow.js.
+                                                                          - ONNX Runtime Web.
+
+                                                                          ---
+
+                                                                          Funciones que deben aparecer en el README
+
+                                                                          Optimización inteligente
+
+                                                                          - Compresión avanzada de imágenes.
+                                                                          - Conversión automática a WebP.
+                                                                          - Reducción del tamaño sin perder demasiada calidad.
+                                                                          - Procesamiento por lotes.
+
+                                                                          Edición
+
+                                                                          - Recortar imágenes.
+                                                                          - Girar.
+                                                                          - Voltear.
+                                                                          - Redimensionar.
+                                                                          - Ajustar brillo y contraste.
+                                                                          - Aplicar filtros.
+
+                                                                          Herramientas avanzadas
+
+                                                                          - Eliminación automática de fondos mediante IA.
+                                                                          - Mejora de calidad.
+                                                                          - Aumento de resolución.
+                                                                          - Restauración de imágenes.
+
+                                                                          Exportación
+
+                                                                          - JPG.
+                                                                          - PNG.
+                                                                          - WebP.
+                                                                          - Descarga individual.
+                                                                          - Descarga masiva en ZIP.
+
+                                                                          ---
+
+                                                                          Requisitos de diseño
+
+                                                                          La aplicación PhotoMD Plus debe tener:
+
+                                                                          - Diseño premium.
+                                                                          - Colores negro, blanco y dorado.
+                                                                          - Interfaz moderna.
+                                                                          - Animaciones suaves.
+                                                                          - Apariencia similar a una aplicación móvil profesional.
+                                                                          - Compatibilidad total con Android y PC.
+                                                                          - Diseño completamente responsivo.
+
+                                                                          ---
+
+                                                                          Importante
+
+                                                                          La IA debe generar:
+
+                                                                          - Todo el código fuente.
+                                                                          - La estructura completa de carpetas.
+                                                                          - Todos los archivos necesarios.
+                                                                          - El README.md profesional.
+                                                                          - Los recursos gráficos necesarios.
+                                                                          - Los GIF de demostración.
+                                                                          - Las insignias del proyecto.
+                                                                          - La configuración PWA.
+                                                                          - El manifiesto.
+                                                                          - Los iconos.
+                                                                          - La documentación.
+
+                                                                          Objetivo final
+
+                                                                          Crear una aplicación web gratuita llamada PhotoMD Plus, lista para producción y publicación en GitHub, con un nivel profesional y una presentación visual moderna y elegante.
+
+
+
+
+                                                                          Requisitos adicionales para la generación de la interfaz
+
+                                                                          Para diseñar la interfaz de usuario de PhotoMD Plus, utiliza como referencia principal las skills y repositorios especializados en diseño frontend.
+
+                                                                          Repositorios y herramientas recomendadas:
+
+                                                                          - "Impeccable (pbakaus/impeccable)" (https://reference-url-citation.invalid/0)
+                                                                          - "Anthropic Skills (frontend-design y otras skills oficiales)" (https://reference-url-citation.invalid/1)
+                                                                          - "Plugin frontend-design para Claude Code" (https://reference-url-citation.invalid/2)
+
+                                                                          Instrucciones para la IA
+
+                                                                          Analiza estos repositorios y aplica sus mejores prácticas para construir una interfaz única y profesional para PhotoMD Plus.
+
+                                                                          La interfaz debe evitar diseños genéricos y plantillas básicas. Debe parecer una aplicación moderna de nivel profesional.
+
+                                                                          Implementa principios avanzados de:
+
+                                                                          - Jerarquía visual.
+                                                                          - Espaciado consistente.
+                                                                          - Tipografía profesional.
+                                                                          - Accesibilidad.
+                                                                          - Diseño responsivo.
+                                                                          - Animaciones suaves.
+                                                                          - Experiencia de usuario optimizada para móviles.
+                                                                          - Rendimiento elevado.
+                                                                          - Compatibilidad con pantallas pequeñas y grandes.
+
+                                                                          Comandos y conceptos recomendados de Impeccable
+
+                                                                          Utiliza internamente los conceptos equivalentes a:
+
+                                                                          - "craft" para diseñar la aplicación completa.
+                                                                          - "shape" para planificar la experiencia de usuario.
+                                                                          - "critique" para revisar la interfaz.
+                                                                          - "audit" para comprobar accesibilidad y rendimiento.
+                                                                          - "polish" para preparar la versión final.
+                                                                          - "animate" para crear transiciones elegantes.
+                                                                          - "layout" para mejorar la distribución visual.
+                                                                          - "optimize" para optimizar el rendimiento.
+                                                                          - "adapt" para Android, tablets y PC.
+
+                                                                          Impeccable incluye más de 20 comandos especializados en diseño frontend y sistemas visuales avanzados.
+
+                                                                          Requisitos visuales de PhotoMD Plus
+
+                                                                          La aplicación debe transmitir una sensación de:
+
+                                                                          - Herramienta premium.
+                                                                          - Editor profesional.
+                                                                          - Rapidez.
+                                                                          - Potencia.
+                                                                          - Simplicidad.
+                                                                          - Tecnología moderna.
+
+                                                                          Evita:
+
+                                                                          - Gradientes genéricos.
+                                                                          - Diseños repetitivos generados por IA.
+                                                                          - Tarjetas innecesarias dentro de otras tarjetas.
+                                                                          - Colores mal combinados.
+                                                                          - Espaciados inconsistentes.
+
+                                                                          Estas recomendaciones provienen del proyecto Impeccable, creado específicamente para mejorar interfaces generadas por IA.
+
+                                                                          Estructura técnica
+
+                                                                          Genera:
+
+                                                                          - Sistema de diseño reutilizable.
+                                                                          - Componentes modulares.
+                                                                          - Variables globales.
+                                                                          - Tokens de colores.
+                                                                          - Tipografía escalable.
+                                                                          - Sistema de iconos.
+                                                                          - Animaciones optimizadas.
+                                                                          - Componentes adaptativos.
+
+                                                                          La arquitectura debe estar preparada para crecer y añadir nuevas herramientas de edición en el futuro.
+
+                                                                          Objetivo final
+
+                                                                          Crear una aplicación web llamada PhotoMD Plus que tenga una interfaz de calidad profesional, lista para producción y preparada para publicarse en GitHub con una presentación visual moderna, elegante y completamente optimizada para Android y escritorio.
