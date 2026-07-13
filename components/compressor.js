@@ -31,11 +31,11 @@ const Compressor = {
         </div>
         <div class="option-group">
           <label style="color:var(--text-tertiary);font-size:0.8rem">
-            * Si PNG resulta más pesado, se convertirá automáticamente a WebP/JPEG
+            * Si PNG resulta m\u00E1s pesado, se convertir\u00E1 autom\u00E1ticamente a WebP/JPEG
           </label>
         </div>
         <div class="action-row">
-          <button id="compress-btn" class="btn-primary">Comprimir imágenes</button>
+          <button id="compress-btn" class="btn-primary">Comprimir im\u00E1genes</button>
         </div>
         <div id="compress-progress" class="progress-container hidden">
           <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
@@ -51,24 +51,43 @@ const Compressor = {
         btn.classList.add('active');
         if (btn.dataset.size === 'custom') {
           document.getElementById('custom-size-group').style.display = 'block';
-          this.targetSize = parseInt(document.getElementById('custom-size').value) * 1024;
+          const raw = document.getElementById('custom-size').value;
+          this.targetSize = this.safeInt(raw, 300) * 1024;
         } else {
           document.getElementById('custom-size-group').style.display = 'none';
-          this.targetSize = parseInt(btn.dataset.size) * 1024;
+          this.targetSize = this.safeInt(btn.dataset.size, 500) * 1024;
         }
       });
     });
 
-    document.getElementById('custom-size').addEventListener('input', () => {
-      this.targetSize = parseInt(document.getElementById('custom-size').value) * 1024;
+    document.getElementById('custom-size').addEventListener('input', (e) => {
+      this.targetSize = this.safeInt(e.target.value, 300) * 1024;
     });
 
     document.getElementById('compress-format').addEventListener('change', (e) => {
       this.format = e.target.value;
-      this.ext = this.format.split('/')[1];
+      this.ext = this.format.split('/')[1] || 'jpg';
     });
 
     document.getElementById('compress-btn').addEventListener('click', () => this.compress());
+  },
+
+  safeInt(v, fallback) {
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) && n > 0 ? n : fallback;
+  },
+
+  safeFloat(v, fallback) {
+    const n = parseFloat(v);
+    return Number.isFinite(n) && n > 0 ? n : fallback;
+  },
+
+  fmt(bytes) {
+    const b = this.safeFloat(bytes, 0);
+    if (b === 0) return '0 B';
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+    return (b / 1048576).toFixed(1) + ' MB';
   },
 
   async compress() {
@@ -80,135 +99,176 @@ const Compressor = {
     const total = Uploader.images.length;
     let done = 0;
 
-    for (const img of Uploader.images) {
-      status.textContent = `Comprimiendo ${img.name} (${done + 1}/${total})`;
+    for (const rawImg of Uploader.images) {
+      status.textContent = `Comprimiendo ${rawImg.name || 'imagen'} (${done + 1}/${total})`;
       const fill = progress.querySelector('.progress-fill');
-      fill.style.width = `${(done / total) * 100}%`;
+      fill.style.width = `${total > 0 ? ((done / total) * 100).toFixed(0) : 0}%`;
 
-      const result = await this.compressOne(img);
-      const resultSize = result.blob.size;
-      const saved = ((1 - resultSize / img.size) * 100).toFixed(1);
-      const formatLabel = result.actualFormat.split('/')[1].toUpperCase();
+      try {
+        const result = await this.compressOne(rawImg);
+        const blobSize = result.blob ? result.blob.size : 0;
+        const origSize = this.safeFloat(rawImg.size, 0);
+        const saved = origSize > 0 ? ((1 - blobSize / origSize) * 100).toFixed(1) : '0.0';
 
-      const statusColor = parseFloat(saved) >= 0 ? '#22c55e' : '#ef4444';
-      const statusIcon = parseFloat(saved) >= 0 ? '✓' : '⚠';
+        const origW = this.safeInt(rawImg.width, 0);
+        const origH = this.safeInt(rawImg.height, 0);
+        const outW = this.safeInt(result.width, origW);
+        const outH = this.safeInt(result.height, origH);
+        const fmtLabel = result.actualFormat && result.actualFormat.indexOf('/') > 0
+          ? result.actualFormat.split('/')[1].toUpperCase() : 'ORIG';
 
-      const resultDiv = document.createElement('div');
-      resultDiv.className = 'comparison';
-      resultDiv.innerHTML = `
-        <div class="comparison-box">
-          <div class="label">Original</div>
-          <div class="value">${this.fmt(img.size)}</div>
-          <div style="color:var(--text-tertiary);font-size:0.7rem">${result.origWidth}×${result.origHeight}</div>
-        </div>
-        <div class="comparison-box">
-          <div class="label">Comprimido (${formatLabel})</div>
-          <div class="value">${this.fmt(resultSize)}</div>
-          <div style="color:var(--text-tertiary);font-size:0.7rem">${result.width}×${result.height}</div>
-        </div>
-        <div class="comparison-box" style="grid-column:1/3">
-          <div class="label">${statusIcon} Ahorro</div>
-          <div class="value" style="color:${statusColor}">${saved}%</div>
-          ${result.message ? `<div style="color:var(--text-tertiary);font-size:0.75rem">${result.message}</div>` : ''}
-        </div>
-      `;
-      resultsDiv.appendChild(resultDiv);
+        const savedNum = parseFloat(saved);
+        const statusColor = savedNum >= 0 ? '#22c55e' : '#ef4444';
+        const statusIcon = savedNum >= 0 ? '\u2713' : '\u26A0';
 
-      img.compressedBlob = result.blob;
+        const resultDiv = document.createElement('div');
+        resultDiv.className = 'comparison';
+        resultDiv.innerHTML = [
+          '<div class="comparison-box">',
+          '<div class="label">Original</div>',
+          '<div class="value">' + this.fmt(origSize) + '</div>',
+          '<div style="color:var(--text-tertiary);font-size:0.7rem">' + origW + '\u00D7' + origH + '</div>',
+          '</div>',
+          '<div class="comparison-box">',
+          '<div class="label">Comprimido (' + fmtLabel + ')</div>',
+          '<div class="value">' + this.fmt(blobSize) + '</div>',
+          '<div style="color:var(--text-tertiary);font-size:0.7rem">' + outW + '\u00D7' + outH + '</div>',
+          '</div>',
+          '<div class="comparison-box" style="grid-column:1/3">',
+          '<div class="label">' + statusIcon + ' Ahorro</div>',
+          '<div class="value" style="color:' + statusColor + '">' + saved + '%</div>',
+          result.message ? '<div style="color:var(--text-tertiary);font-size:0.75rem">' + result.message + '</div>' : '',
+          '</div>'
+        ].join('');
+
+        resultsDiv.appendChild(resultDiv);
+
+        if (result.blob && blobSize <= origSize) {
+          rawImg.compressedBlob = result.blob;
+        }
+
+        console.log('[COMPRESSOR] Resultado final:', {
+          nombre: rawImg.name,
+          original: origSize,
+          comprimido: blobSize,
+          ahorro: saved + '%',
+          formato: fmtLabel,
+          resolucion: outW + 'x' + outH
+        });
+      } catch (err) {
+        Toast.show('Error al comprimir: ' + err.message, 'error');
+        console.error('[COMPRESSOR] Error:', err);
+      }
 
       done++;
-      fill.style.width = `${(done / total) * 100}%`;
+      fill.style.width = total > 0 ? ((done / total) * 100).toFixed(0) + '%' : '0%';
     }
 
-    const allReduced = [...document.querySelectorAll('#compress-results .comparison .value')]
-      .some((v) => v.textContent.includes('%') && !v.textContent.startsWith('-'));
-
-    if (allReduced) {
-      status.textContent = 'Compresión completada';
-      Toast.show(`${done} imagen(es) comprimida(s)`, 'success');
-    } else {
-      status.textContent = 'No se pudo reducir algunas imágenes';
-      Toast.show('Algunas imágenes no pudieron comprimirse más', 'info');
-    }
+    status.textContent = 'Compresi\u00F3n completada';
+    Toast.show(done + ' imagen(es) procesada(s)', 'success');
 
     if (!document.querySelector('#compress-results .btn-primary')) {
       const exportBtn = document.createElement('button');
       exportBtn.className = 'btn-primary';
       exportBtn.style.marginTop = '1rem';
-      exportBtn.innerHTML = 'Exportar imágenes';
+      exportBtn.textContent = 'Exportar im\u00E1genes';
       exportBtn.onclick = () => Exporter.open();
       resultsDiv.appendChild(exportBtn);
     }
   },
 
-  fmt(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / 1048576).toFixed(1) + ' MB';
-  },
-
   async compressOne(img) {
-    const origSize = img.file.size;
-    const origW = img.width;
-    const origH = img.height;
-    const origFormat = img.file.type || 'unknown';
-    const target = this.targetSize;
-    const preferFormat = this.format;
+    const origSize = this.safeFloat(img.file ? img.file.size : img.size, 0);
+    const origW = this.safeInt(img.width, 0);
+    const origH = this.safeInt(img.height, 0);
+    const origFormat = (img.file && img.file.type) || 'image/jpeg';
+    const target = this.safeFloat(this.targetSize, 500 * 1024);
+    const preferFormat = this.format || 'image/jpeg';
 
-    console.log('=== COMPRESSOR DEBUG ===');
-    console.log('Original:', img.name, origFormat, this.fmt(origSize), `${origW}×${origH}`);
-    console.log('Target:', this.fmt(target), 'Preferred format:', preferFormat);
-
-    const getBlob = (canvas, fmt, quality) => {
-      return new Promise((r) => {
-        try { canvas.toBlob((b) => r(b), fmt, quality); }
-        catch (e) { console.warn('toBlob error:', e); r(null); }
-      });
-    };
-
-    const origBlob = await new Promise((r) => {
-      const reader = new FileReader();
-      reader.onload = () => r(new Blob([reader.result], { type: img.file.type }));
-      reader.readAsArrayBuffer(img.file);
+    console.log('[COMPRESSOR] Iniciando compresi\u00F3n:', {
+      nombre: img.name,
+      tamanoOriginal: origSize,
+      tamanoObjetivo: target,
+      formatoPreferido: preferFormat,
+      resolucion: origW + 'x' + origH,
+      formatoOriginal: origFormat
     });
 
+    if (!origSize || !origW || !origH || origSize <= 0 || origW <= 0 || origH <= 0) {
+      console.error('[COMPRESSOR] Dimensiones inv\u00E1lidas:', { origSize, origW, origH });
+      const dummy = await this.readFileAsBlob(img.file);
+      return { blob: dummy, origWidth: origW, origHeight: origH, width: origW, height: origH, actualFormat: origFormat, message: 'Datos de imagen inv\u00E1lidos' };
+    }
+
+    const origBlob = await this.readFileAsBlob(img.file);
+
     if (origSize <= target * 0.95) {
-      console.log('Already under target → returning original');
-      return { blob: origBlob, origWidth: origW, origHeight: origH, width: origW, height: origH, actualFormat: origFormat || 'image/jpeg', message: 'Ya está por debajo del objetivo' };
+      console.log('[COMPRESSOR] Ya est\u00E1 por debajo del objetivo, devolviendo original');
+      return { blob: origBlob, origWidth: origW, origHeight: origH, width: origW, height: origH, actualFormat: origFormat || 'image/jpeg', message: 'Ya est\u00E1 por debajo del objetivo' };
     }
 
     let bestBlob = origBlob;
     let bestSize = origSize;
 
     const updateBest = (blob, w, h, fmt) => {
-      if (!blob || blob.size >= bestSize) return;
+      if (!blob) return;
+      const s = blob.size;
+      if (!Number.isFinite(s) || s <= 0) return;
+      if (s >= bestSize) return;
       bestBlob = blob;
-      bestSize = blob.size;
-      console.log(`  ✓ Mejor encontrado: ${this.fmt(blob.size)} | ${fmt} | ${w}×${h}`);
+      bestSize = s;
+      console.log('[COMPRESSOR] Mejor encontrado:', { formato: fmt, peso: s, resolucion: w + 'x' + h });
+    };
+
+    const toBlobSafe = (canvas, fmt, quality) => {
+      return new Promise((r) => {
+        try {
+          if (typeof canvas.toBlob !== 'function') { r(null); return; }
+          canvas.toBlob((b) => {
+            if (!b || !Number.isFinite(b.size)) { r(null); return; }
+            r(b);
+          }, fmt, quality);
+        } catch (e) {
+          console.warn('[COMPRESSOR] toBlob error:', e.message);
+          r(null);
+        }
+      });
     };
 
     const testLossyScale = async (fmt, scale) => {
-      const w = Math.max(32, Math.round(origW * scale));
-      const h = Math.max(32, Math.round(origH * scale));
+      const sw = Math.max(32, Math.round(origW * scale));
+      const sh = Math.max(32, Math.round(origH * scale));
 
-      const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(img.img, 0, 0, w, h);
+      if (!Number.isFinite(sw) || !Number.isFinite(sh)) {
+        console.warn('[COMPRESSOR] Escala inv\u00E1lida:', { scale, sw, sh });
+        return null;
+      }
+
+      let canvas;
+      try {
+        canvas = document.createElement('canvas');
+        canvas.width = sw;
+        canvas.height = sh;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return null;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img.img, 0, 0, sw, sh);
+      } catch (e) {
+        console.warn('[COMPRESSOR] Error al dibujar canvas:', e.message);
+        return null;
+      }
 
       const qualities = [40, 30, 25, 20, 15, 10, 5];
       for (const qVal of qualities) {
         const q = qVal / 100;
-        const blob = await getBlob(canvas, fmt, q);
+        const blob = await toBlobSafe(canvas, fmt, q);
         if (!blob) continue;
 
-        updateBest(blob, w, h, fmt);
+        updateBest(blob, sw, sh, fmt);
 
         if (blob.size <= target) {
-          console.log(`  ✔ Objetivo alcanzado: ${fmt} q=${q} escala=${scale} → ${this.fmt(blob.size)}`);
-          return { blob, width: w, height: h, actualFormat: fmt };
+          console.log('[COMPRESSOR] Objetivo alcanzado:', { formato: fmt, calidad: q, escala: scale, peso: blob.size });
+          return { blob, width: sw, height: sh, actualFormat: fmt };
         }
       }
       return null;
@@ -223,21 +283,27 @@ const Compressor = {
 
     for (const fmt of formatsToTry) {
       if (fmt === 'image/png') {
-        const c = document.createElement('canvas');
-        c.width = origW;
-        c.height = origH;
-        c.getContext('2d').drawImage(img.img, 0, 0);
-        const blob = await getBlob(c, 'image/png');
-        console.log(`  PNG lossless → ${this.fmt(blob ? blob.size : 0)}`);
-        updateBest(blob, origW, origH, 'image/png');
-        if (blob && blob.size <= target) {
-          return { blob, origWidth: origW, origHeight: origH, width: origW, height: origH, actualFormat: 'image/png', message: '' };
+        let c;
+        try {
+          c = document.createElement('canvas');
+          c.width = origW;
+          c.height = origH;
+          c.getContext('2d').drawImage(img.img, 0, 0);
+        } catch (e) { continue; }
+
+        const blob = await toBlobSafe(c, 'image/png');
+        if (blob) {
+          console.log('[COMPRESSOR] PNG lossless: ' + this.fmt(blob.size));
+          updateBest(blob, origW, origH, 'image/png');
+          if (blob.size <= target) {
+            return { blob, origWidth: origW, origHeight: origH, width: origW, height: origH, actualFormat: 'image/png', message: '' };
+          }
         }
         continue;
       }
 
-      for (let scale = 1; scale >= 0.3; scale -= 0.1) {
-        const hit = await testLossyScale(fmt, scale);
+      for (let s = 1; s >= 0.3; s = Math.round((s - 0.1) * 100) / 100) {
+        const hit = await testLossyScale(fmt, s);
         if (hit) {
           return { blob: hit.blob, origWidth: origW, origHeight: origH, width: hit.width, height: hit.height, actualFormat: hit.actualFormat, message: '' };
         }
@@ -245,12 +311,30 @@ const Compressor = {
     }
 
     if (bestSize < origSize) {
-      console.log(`Mejor logrado: ${this.fmt(bestSize)} (ahorro ${((1 - bestSize/origSize)*100).toFixed(1)}%)`);
-      const actualFmt = bestBlob.type || formatsToTry.find((f) => f !== 'image/png') || 'image/jpeg';
-      return { blob: bestBlob, origWidth: origW, origHeight: origH, width: origW, height: origH, actualFormat: actualFmt, message: `Máxima compresión: ${this.fmt(bestSize)} (objetivo: ${this.fmt(target)})` };
+      const pct = origSize > 0 ? ((1 - bestSize / origSize) * 100).toFixed(1) : '0.0';
+      const actualFmt = (bestBlob && bestBlob.type) || 'image/jpeg';
+      console.log('[COMPRESSOR] Mejor logrado:', { peso: bestSize, ahorro: pct + '%' });
+      return { blob: bestBlob, origWidth: origW, origHeight: origH, width: origW, height: origH, actualFormat: actualFmt, message: 'M\u00E1xima compresi\u00F3n: ' + this.fmt(bestSize) + ' (objetivo: ' + this.fmt(target) + ')' };
     }
 
-    console.log('No se puede comprimir más → devolviendo original');
-    return { blob: origBlob, origWidth: origW, origHeight: origH, width: origW, height: origH, actualFormat: origFormat || 'image/jpeg', message: 'No es posible comprimir más esta imagen' };
+    console.log('[COMPRESSOR] No se puede comprimir, devolviendo original');
+    return { blob: origBlob, origWidth: origW, origHeight: origH, width: origW, height: origH, actualFormat: origFormat || 'image/jpeg', message: 'No es posible comprimir m\u00E1s esta imagen' };
+  },
+
+  readFileAsBlob(file) {
+    return new Promise((r) => {
+      if (!file) {
+        r(new Blob([], { type: 'image/jpeg' }));
+        return;
+      }
+      try {
+        const reader = new FileReader();
+        reader.onload = () => r(new Blob([reader.result], { type: file.type || 'image/jpeg' }));
+        reader.onerror = () => r(new Blob([], { type: file.type || 'image/jpeg' }));
+        reader.readAsArrayBuffer(file);
+      } catch (e) {
+        r(new Blob([], { type: 'image/jpeg' }));
+      }
+    });
   }
 };
